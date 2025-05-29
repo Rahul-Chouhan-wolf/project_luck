@@ -4,21 +4,17 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const orderRoutes = require('./routes/orderRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-
+const cors = require('cors')
 dotenv.config();
 
 connectDB();
 
 const app = express();
-
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
 
 app.use('/api/users', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

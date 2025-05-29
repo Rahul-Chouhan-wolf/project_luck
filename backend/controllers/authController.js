@@ -33,9 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
-            isAdmin: user.isAdmin,
-            token: generateToken(user._id),
-        });
+        })
     } else {
         res.status(400);
         throw new Error('Invalid user data');
@@ -51,9 +49,6 @@ const authUser = asyncHandler(async (req, res) => {
     if (user && (await user.matchPassword(password))) {
         res.json({
             _id: user._id,
-            name: user.name,
-            email: user.email,
-            isAdmin: user.isAdmin,
             token: generateToken(user._id),
         });
     } else {
@@ -70,8 +65,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         res.json({
             _id: user._id,
             name: user.name,
-            email: user.email,
-            isAdmin: user.isAdmin,
+            email: user.email
         });
     } else {
         res.status(404);
