@@ -9,7 +9,7 @@ import {
   Paper,
 } from '@mui/material'
 import Cookies from 'js-cookie'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate()
@@ -27,6 +27,7 @@ const Dashboard: React.FC = () => {
     navigate('/login')
   }
 
+  const { userId } = useParams()
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" color="primary">
@@ -41,12 +42,21 @@ const Dashboard: React.FC = () => {
       </AppBar>
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" textAlign="center" gutterBottom>
             Welcome to your Dashboard!
           </Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" textAlign="center">
             Here you can manage your account and view your information.
           </Typography>
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() => navigate(`/${userId}/connect-dots`)}
+            >
+              Connect the Dots
+            </Button>
+          </Box>
         </Paper>
       </Container>
     </Box>
