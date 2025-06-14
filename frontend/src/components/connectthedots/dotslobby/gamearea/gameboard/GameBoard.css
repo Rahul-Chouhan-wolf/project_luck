@@ -1,0 +1,11 @@
+/* src/components/GameBoard.css */
+
+.game-board-container {
+  margin: 20px auto; /* Center the board container */
+  width: fit-content; /* Ensure container only takes necessary width */
+}
+
+/*
+  The .game-grid class is now primarily styled using MUI's sx prop in GameBoard.tsx.
+  You might keep this file for general layout or global styles.
+*/

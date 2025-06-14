@@ -1,6 +1,5 @@
-// frontend/src/socket.ts
-import { io } from 'socket.io-client'
+// src/socket.ts
+import { io, Socket } from 'socket.io-client'
 
-const socket = io('http://localhost:5000') // Use env variable in production
-
-export default socket
+const URL = 'http://localhost:5000' // or env var
+export const socket: Socket = io(URL)

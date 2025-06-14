@@ -1,15 +1,20 @@
 import { Box, Button, Paper, Typography } from '@mui/material'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import UsernameDialog from './UsernameDialog'
+import JoinLobbyDialog from './JoinLobbyDialog'
+import { socket } from './socket'
 
 const ConnectTheDots = () => {
   const [userName, setUserName] = useState<string>('')
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+  const [joinLobbyDialogOpen, setJoinLobbyDialogOpen] = useState<boolean>(false)
   const { userId } = useParams()
+  const navigate = useNavigate()
+
   useEffect(() => {
-    document.title = 'Connect the Dots - Game Lobby'
+    document.title = 'Connect the Dots'
     axios
       .get(`/${userId}/connectDots/getUserName`)
       .then((response) => {
@@ -52,6 +57,43 @@ const ConnectTheDots = () => {
       .catch((error) => {
         console.error('Error saving username:', error)
       })
+  }
+
+  const handleCreateLobby = (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    socket.emit('createLobby', { userId })
+    socket.on('lobbyCreated', (data) => {
+      if (data.lobbyId) {
+        navigate(`./${data.lobbyId}`)
+      } else {
+        console.error('Lobby ID not found in response')
+      }
+    })
+    socket.on('error', (err) => {
+      console.error('Socket error:', err)
+    })
+  }
+
+  const handleJoinLobbyDialogOpen = (event: { preventDefault: () => void }) => {
+    event.preventDefault()
+    setJoinLobbyDialogOpen(true)
+  }
+
+  const handleJoinLobby = (lobbyId: string) => {
+    socket.emit('joinLobby', { lobbyId, userName })
+
+    socket.on('lobbyJoined', (data) => {
+      navigate(`./${lobbyId}`)
+    })
+
+    socket.on('error', (err) => {
+      console.error('Socket error:', err)
+    })
+
+    setJoinLobbyDialogOpen(false)
+    return () => {
+      socket.off('error')
+    }
   }
 
   return (
@@ -124,7 +166,6 @@ const ConnectTheDots = () => {
           >
             {userName ? 'Update Username' : 'Create Username'}
           </Button>
-          {/* Dialog for username input */}
           <UsernameDialog
             open={dialogOpen}
             initialValue={userName}
@@ -146,12 +187,15 @@ const ConnectTheDots = () => {
             background: 'linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%)',
             boxShadow: '0 4px 20px rgba(14,165,233,0.15)',
           }}
+          onClick={handleCreateLobby}
+          data-testid="create-lobby-button"
         >
           Create Lobby
         </Button>
         <Button
           variant="outlined"
           color="primary"
+          onClick={handleJoinLobbyDialogOpen}
           sx={{
             width: 220,
             fontWeight: 600,
@@ -168,6 +212,11 @@ const ConnectTheDots = () => {
         >
           Join the Lobby
         </Button>
+        <JoinLobbyDialog
+          open={joinLobbyDialogOpen}
+          onJoin={handleJoinLobby}
+          onCancel={() => setJoinLobbyDialogOpen(false)}
+        />
       </Paper>
     </Box>
   )

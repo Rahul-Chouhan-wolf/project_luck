@@ -1,12 +1,13 @@
 const express = require('express');
-const { createLobbyApi, getLobbyApi, createUserName, getUserName, updateUserName } = require('../../controllers/connectdots/connectDotsController');
+const { createUserName, getUserName, updateUserName } = require('../../controllers/connectdots/connectDotsController');
 
 const router = express.Router({ mergeParams: true }) // merge parent route params
 
-router.post('/create', createLobbyApi)
+// Only keep username-related REST endpoints
 router.post('/createUserName', createUserName)
 router.get('/getUserName', getUserName)
-router.get('/:lobbyId', getLobbyApi)
 router.put('/updateUserName', updateUserName)
+
+// All lobby actions (createLobby, getLobbyInfo, joinLobby) are now handled via Socket.IO at /socket.io
 
 module.exports = router

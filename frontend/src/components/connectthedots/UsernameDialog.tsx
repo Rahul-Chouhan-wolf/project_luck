@@ -14,7 +14,7 @@ interface UsernameDialogProps {
   initialValue: string
   onClose: () => void
   onSave: (username: string) => void
-  onUpdate?: (username: string) => void
+  onUpdate: (username: string) => void
 }
 
 const UsernameDialog: React.FC<UsernameDialogProps> = ({

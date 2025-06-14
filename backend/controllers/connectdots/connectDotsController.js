@@ -1,23 +1,4 @@
-const { get } = require("mongoose");
-
-const lobbies = {}; // In-memory
 const ConnectDotsUser = require('../../models/connectdots/userModel')
-
-const createLobbyApi = (req, res) => {
-  const lobbyId = Math.random().toString(36).substring(2, 8);
-  lobbies[lobbyId] = { players: [] };
-  res.status(201).json({ lobbyId });
-};
-
-const getLobbyApi = (req, res) => {
-  const { lobbyId } = req.params;
-  const lobby = lobbies[lobbyId];
-  if (lobby) {
-    res.json(lobby);
-  } else {
-    res.status(404).json({ message: 'Lobby not found' });
-  }
-};
 
 const createUserName = async (req, res) => {
   const { userId, userName } = req.body;
@@ -49,13 +30,12 @@ const updateUserName = async (req, res) => {
 }
 
 const getUserName = async (req, res) => {
-  let userId = req.params.userId || req.query.userId || req.body.userId;
-  console.log('getUserName', req.params, req.query, req.body);
+  let userId = req.params.userId || req.query.userId || req.body.userId
   if (!userId) {
     return res.status(400).json({ message: 'User ID is required' });
   }
 
-  const user = await ConnectDotsUser.findOne({ userId });
+  const user = await ConnectDotsUser.findOne({ userId })
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
@@ -63,10 +43,7 @@ const getUserName = async (req, res) => {
 }
 
 module.exports = {
-  createLobbyApi,
-  getLobbyApi,
-  lobbies, // expose to sockets
   createUserName,
   getUserName,
-  updateUserName
+  updateUserName,
 };

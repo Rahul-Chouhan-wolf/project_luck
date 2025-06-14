@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
             <Button
               color="primary"
               variant="contained"
-              onClick={() => navigate(`/${userId}/connect-dots`)}
+              onClick={() => navigate(`/${userId}/connectDots`)}
             >
               Connect the Dots
             </Button>
