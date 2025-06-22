@@ -6,6 +6,7 @@ import './GameBoard.css'
 
 interface GameBoardProps {
   gridSize?: number
+  username?: string
 }
 
 type Connection = { from: number; to: number }

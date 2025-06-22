@@ -17,6 +17,10 @@ const ConnectDotsLobbySchema = new mongoose.Schema({
     required: true
   }],
   messages: [MessageSchema],
+  scoreCard: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ScoreCard',
+  },
   createdAt: {
     type: Date,
     default: Date.now

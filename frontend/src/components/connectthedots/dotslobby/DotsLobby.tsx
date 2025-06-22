@@ -4,6 +4,7 @@ import { Typography, Button } from '@mui/material'
 import { socket } from '../socket'
 import Chatroom from './chatroom/Chatroom'
 import Gamearea from './gamearea/Gamearea'
+import Scorecard from './scorecard/ScoreCard'
 
 type LobbyInfo = {
   players: string[]
@@ -15,6 +16,7 @@ const DotsLobby = () => {
   const [lobbyInfo, setLobbyInfo] = useState<LobbyInfo>({
     players: [],
     lobbyId: '',
+    current_user: '',
   })
   const { userId, lobbyId } = useParams()
   const navigate = useNavigate()
@@ -64,7 +66,7 @@ const DotsLobby = () => {
       {/* Left: Players Joined */}
       <div
         style={{
-          width: 200,
+          width: 400,
           background: '#f5f5f5',
           padding: 16,
           borderRadius: 8,
@@ -73,7 +75,11 @@ const DotsLobby = () => {
           alignItems: 'center',
         }}
       >
-        <h3>Players</h3>
+        <Scorecard
+          username={lobbyInfo.current_user as string}
+          lobbyId={lobbyId as string}
+        />
+        <h3 style={{ marginTop: 24 }}>Players</h3>
         <ul style={{ listStyle: 'none', padding: 0, width: '100%' }}>
           {lobbyInfo.players.length !== 0 &&
             lobbyInfo.players.map((player, index) => {
@@ -135,7 +141,10 @@ const DotsLobby = () => {
             width: '100%',
           }}
         >
-          <Gamearea lobbyId={lobbyId as string} />
+          <Gamearea
+            lobbyId={lobbyId as string}
+            username={lobbyInfo.current_user || ''}
+          />
         </div>
         <Button
           variant="outlined"

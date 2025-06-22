@@ -1,4 +1,5 @@
 const ConnectDotsLobby = require("../../models/connectdots/lobbyModel")
+const ScoreCard = require("../../models/connectdots/scoreCard")
 const ConnectDotsUser = require("../../models/connectdots/userModel")
 
 module.exports = (io) => {
@@ -21,6 +22,25 @@ module.exports = (io) => {
       players: [user.userName],
       messages: []
     })
+
+    const lobbyScoreCard = ScoreCard.create({
+      lobby,
+      players: [{
+        username: user.userName,
+        score: 0,
+        color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+        connectedDots: 0
+      }]
+    })
+
+    if (!lobbyScoreCard) {
+      socket.emit('error', { message: 'Failed to create score card' })
+      return
+    }
+    console.log('scorecard created:', lobbyScoreCard)
+    // Associate the score card with the lobby
+    lobby['scoreCard'] = await lobbyScoreCard
+    await lobby.save()
 
     if (!lobby) {
       socket.emit('error', { message: 'Failed to create lobby' })
@@ -68,8 +88,13 @@ module.exports = (io) => {
 
     await lobby.updateOne({ $addToSet: { players: userName } })
     const updatedLobby = await ConnectDotsLobby.findOne({ lobbyId })
-
-    socket.join(lobbyId) // <-- Add this line
+    // Add user to the scorecard with a unique color
+    const userColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    await ScoreCard.updateOne(
+      { lobby: lobby._id },
+      { $push: { players: { username: userName, score: 0, color: userColor, connectedDots: 0 } } }
+    )
+    socket.join(lobbyId)
 
     io.to(lobbyId).emit('lobbyJoined', {
       lobbyId,
@@ -143,6 +168,52 @@ module.exports = (io) => {
     const messages = lobby.messages || []
     socket.emit('messages', { lobbyId: lobbyId, messages: messages })
     console.log(`Messages for lobby ${lobbyId} sent to user ${socket.id}`)
+  })
+
+
+  // Score Card API's
+  socket.on('getScoreCard', async ({ lobbyId }) => {
+  const lobby = await ConnectDotsLobby.findOne({ lobbyId })
+  if (!lobby) {
+    socket.emit('error', { message: 'Lobby not found' })
+    return
+  }
+  const scoreCard = await ScoreCard.findOne({ _id: lobby.scoreCard })
+  if (!scoreCard) {
+    socket.emit('error', { message: 'Score card not found' })
+    return
+  }
+  socket.emit('scoreCardInfo', {
+    lobbyId: lobbyId,
+    scorecard: scoreCard.players.map(player => ({
+      username: player.username,
+      score: player.score,
+      color: player.color,
+      connectedDots: player.connectedDots
+    }))
+  })
+  })
+
+  socket.on('updateScore', async ({ lobbyId, userName, score, color, connectedDots }) => {
+    if (!lobbyId || !userName || score === undefined || color === undefined || connectedDots === undefined) {
+      socket.emit('error', { message: 'Lobby ID, user name, score, color and connected dots are required' })
+      return
+    }
+    const lobby = await ConnectDotsLobby.findOne({ lobbyId })
+    if (!lobby) {
+      socket.emit('error', { message: 'Lobby not found' })
+      return
+    }
+    if (!lobby.players.includes(userName)) {
+      socket.emit('error', { message: 'User not in lobby' })
+      return
+    }
+    // Update the player's score in the lobby
+    await ConnectDotsLobby.updateOne(
+      { lobbyId, 'players.userName': userName },
+      { $set: { 'players.$.score': score, 'players.$.color': color, 'players.$.connectedDots': connectedDots } }
+    )
+    const updatedLobby = await ConnectDotsLobby.findOne({ lobbyId }).populate('players')
   })
 
   socket.on('disconnect', () => {

@@ -3,9 +3,10 @@ import GameBoard from './gameboard/GameBoard'
 
 interface GameareaProps {
   lobbyId: string
+  username: string
 }
 
-const Gamearea: React.FC<GameareaProps> = ({ lobbyId }) => {
+const Gamearea: React.FC<GameareaProps> = ({ lobbyId, username }) => {
   return (
     <div
       style={{
@@ -29,7 +30,7 @@ const Gamearea: React.FC<GameareaProps> = ({ lobbyId }) => {
           width: '100%',
         }}
       >
-        <GameBoard />
+        <GameBoard username={username} />
       </div>
     </div>
   )
