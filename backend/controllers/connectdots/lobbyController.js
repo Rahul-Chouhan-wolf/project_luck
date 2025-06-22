@@ -121,11 +121,20 @@ module.exports = (io) => {
       return
     }
     await lobby.updateOne({ $pull: { players: userName } })
+    await ScoreCard.updateOne(
+      { lobby: lobby._id },
+      { $pull: { players: { username: userName } } }
+    )
+    
     const updatedLobby = await ConnectDotsLobby.findOne({ lobbyId })
-    io.to(lobbyId).emit('leftLobby', {
+
+    socket.emit('leftLobby', { lobbyId, userName })
+    io.to(lobbyId).emit('lobbyUpdate', {
       lobbyId,
       players: updatedLobby.players,
-    })
+    }   )
+    socket.leave(lobbyId) // Remove the user from the lobby room
+
     console.log(`User ${userName} left lobby ${lobbyId}`)
   })
 

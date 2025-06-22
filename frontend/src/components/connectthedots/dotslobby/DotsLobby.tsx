@@ -47,14 +47,15 @@ const DotsLobby = () => {
       socket.off('lobbyUpdate')
       socket.off('error')
     }
-  }, [userId, lobbyId, lobbyInfo.players.length])
+  }, [])
 
   const handleLeaveLobby = () => {
     const userName = lobbyInfo.current_user
     socket.emit('leaveLobby', { lobbyId, userName })
 
     socket.on('leftLobby', (data) => {
-      console.log('Lobby updated:', data)
+      // setLobbyInfo({ ...lobbyInfo, players: data.players })
+      // Navigate to dashboard after leaving
       navigate(`/${userId}/dashboard`)
     })
 
