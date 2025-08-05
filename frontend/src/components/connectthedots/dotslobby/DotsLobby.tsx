@@ -24,42 +24,54 @@ const DotsLobby = () => {
   useEffect(() => {
     document.title = 'Connect the Dots - Lobby'
 
+    if (!lobbyId || !userId) {
+      console.error('Missing lobbyId or userId')
+      return
+    }
+
     // Request lobby info
     socket.emit('getLobbyInfo', { lobbyId, userId })
 
-    socket.on('lobbyInfo', (data) => {
+    const handleLobbyInfo = (data: LobbyInfo) => {
       setLobbyInfo(data)
-    })
+    }
 
-    socket.on('lobbyUpdate', (data) => {
+    const handleLobbyUpdate = (data: {
+      lobbyId: string
+      players: string[]
+    }) => {
       setLobbyInfo((prev) => ({
         ...prev,
         players: data.players,
       }))
-    })
+    }
 
-    socket.on('error', (err) => {
+    const handleError = (err: { message: string }) => {
       console.error('Socket error:', err)
-    })
+    }
+
+    socket.on('lobbyInfo', handleLobbyInfo)
+    socket.on('lobbyUpdate', handleLobbyUpdate)
+    socket.on('error', handleError)
 
     return () => {
-      socket.off('lobbyInfo')
-      socket.off('lobbyUpdate')
-      socket.off('error')
+      socket.off('lobbyInfo', handleLobbyInfo)
+      socket.off('lobbyUpdate', handleLobbyUpdate)
+      socket.off('error', handleError)
     }
-  }, [])
+  }, [lobbyId, userId])
 
   const handleLeaveLobby = () => {
     const userName = lobbyInfo.current_user
+    if (!lobbyId || !userName) return
+
     socket.emit('leaveLobby', { lobbyId, userName })
 
-    socket.on('leftLobby', (data) => {
-      // setLobbyInfo({ ...lobbyInfo, players: data.players })
-      // Navigate to dashboard after leaving
+    const handleLeftLobby = (data: { lobbyId: string; userName: string }) => {
       navigate(`/${userId}/dashboard`)
-    })
+    }
 
-    socket.off('lobbyUpdate') // Clean up listener after leaving
+    socket.once('leftLobby', handleLeftLobby)
   }
 
   return (

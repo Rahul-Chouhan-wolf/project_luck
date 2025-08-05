@@ -15,15 +15,23 @@ const DotStyled = styled('button')(({ theme }) => ({
   '&:hover': {
     backgroundColor: theme.palette.grey[900],
   },
+  '&:disabled': {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+    '&:hover': {
+      backgroundColor: theme.palette.grey[700],
+    },
+  },
 }))
 
 interface DotProps {
   id: number
   onConnect: (from: number, to: number) => void
   gridSize: number
+  disabled?: boolean
 }
 
-const Dot: React.FC<DotProps> = ({ id, onConnect }) => {
+const Dot: React.FC<DotProps> = ({ id, onConnect, disabled = false }) => {
   const [isDrawing, setIsDrawing] = React.useState(false)
   const [lineEnd, setLineEnd] = React.useState<{ x: number; y: number } | null>(
     null
@@ -32,6 +40,8 @@ const Dot: React.FC<DotProps> = ({ id, onConnect }) => {
 
   // Start drawing
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (disabled) return
+
     setIsDrawing(true)
     setLineEnd({ x: e.clientX, y: e.clientY })
     window.addEventListener('mousemove', handleMouseMove)
@@ -40,11 +50,14 @@ const Dot: React.FC<DotProps> = ({ id, onConnect }) => {
 
   // Update line end
   const handleMouseMove = (e: MouseEvent) => {
+    if (disabled) return
     setLineEnd({ x: e.clientX, y: e.clientY })
   }
 
   // Finish drawing
   const handleMouseUp = (e: MouseEvent) => {
+    if (disabled) return
+
     setIsDrawing(false)
     setLineEnd(null)
     window.removeEventListener('mousemove', handleMouseMove)
@@ -61,8 +74,13 @@ const Dot: React.FC<DotProps> = ({ id, onConnect }) => {
 
   return (
     <>
-      <DotStyled ref={dotRef} data-dot-id={id} onMouseDown={handleMouseDown} />
-      {isDrawing && lineEnd && (
+      <DotStyled
+        ref={dotRef}
+        data-dot-id={id}
+        onMouseDown={handleMouseDown}
+        disabled={disabled}
+      />
+      {isDrawing && lineEnd && !disabled && (
         <svg
           style={{
             position: 'fixed',

@@ -5,6 +5,7 @@ interface PlayerScore {
   username: string
   score: number
   color: string
+  connectedDots: number
 }
 
 interface ScoreCardProps {
@@ -16,15 +17,47 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ username, lobbyId }) => {
   const [scores, setScores] = useState<PlayerScore[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Request lobby info
+  const fetchScoreCard = () => {
     socket.emit('getScoreCard', { lobbyId })
+  }
 
-    socket.on('scoreCardInfo', (data) => {
+  useEffect(() => {
+    // Request score card
+    fetchScoreCard()
+
+    const handleScoreCardInfo = (data: {
+      lobbyId: string
+      scorecard: PlayerScore[]
+    }) => {
       setScores(data.scorecard)
       setLoading(false)
-    })
-  }, [])
+    }
+
+    const handleMoveMade = (data: {
+      from: number
+      to: number
+      player: string
+      score: number
+    }) => {
+      // Refresh score card when a move is made
+      fetchScoreCard()
+    }
+
+    const handleGameComplete = (data: { scores: PlayerScore[] }) => {
+      setScores(data.scores)
+      setLoading(false)
+    }
+
+    socket.on('scoreCardInfo', handleScoreCardInfo)
+    socket.on('moveMade', handleMoveMade)
+    socket.on('gameComplete', handleGameComplete)
+
+    return () => {
+      socket.off('scoreCardInfo', handleScoreCardInfo)
+      socket.off('moveMade', handleMoveMade)
+      socket.off('gameComplete', handleGameComplete)
+    }
+  }, [lobbyId])
 
   if (loading) {
     return <div>Loading scorecard...</div>
@@ -61,7 +94,8 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ username, lobbyId }) => {
         <thead>
           <tr>
             <th style={{ textAlign: 'left' }}>Player</th>
-            <th style={{ textAlign: 'right' }}>Score</th>
+            <th style={{ textAlign: 'center' }}>Score</th>
+            <th style={{ textAlign: 'center' }}>Boxes</th>
           </tr>
         </thead>
         <tbody>
@@ -79,12 +113,13 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ username, lobbyId }) => {
                     width: 12,
                     height: 12,
                     borderRadius: '50%',
-                    color: player.color,
+                    backgroundColor: player.color,
                     marginRight: 8,
                   }}
                 />
                 {player.username}
               </td>
+              <td style={{ textAlign: 'center' }}>{player.score}</td>
               <td style={{ textAlign: 'center' }}>{player.score}</td>
             </tr>
           ))}

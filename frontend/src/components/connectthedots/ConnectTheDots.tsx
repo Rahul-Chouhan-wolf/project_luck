@@ -61,15 +61,22 @@ const ConnectTheDots = () => {
 
   const handleCreateLobby = (event: { preventDefault: () => void }) => {
     event.preventDefault()
+
+    // Remove any existing listeners to prevent duplicates
+    socket.off('lobbyCreated')
+    socket.off('error')
+
     socket.emit('createLobby', { userId })
-    socket.on('lobbyCreated', (data) => {
+
+    socket.once('lobbyCreated', (data) => {
       if (data.lobbyId) {
         navigate(`./${data.lobbyId}`)
       } else {
         console.error('Lobby ID not found in response')
       }
     })
-    socket.on('error', (err) => {
+
+    socket.once('error', (err) => {
       console.error('Socket error:', err)
     })
   }
@@ -80,20 +87,21 @@ const ConnectTheDots = () => {
   }
 
   const handleJoinLobby = (lobbyId: string) => {
+    // Remove any existing listeners to prevent duplicates
+    socket.off('lobbyJoined')
+    socket.off('error')
+
     socket.emit('joinLobby', { lobbyId, userName })
 
-    socket.on('lobbyJoined', (data) => {
+    socket.once('lobbyJoined', (data) => {
       navigate(`./${lobbyId}`)
     })
 
-    socket.on('error', (err) => {
+    socket.once('error', (err) => {
       console.error('Socket error:', err)
     })
 
     setJoinLobbyDialogOpen(false)
-    return () => {
-      socket.off('error')
-    }
   }
 
   return (

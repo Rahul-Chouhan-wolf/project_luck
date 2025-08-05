@@ -1,13 +1,13 @@
 // For Connecting MongoDB
 // config/db.js
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI, {
+        // Use environment variable or fallback to hardcoded value
+        const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/connect_dots';
+        
+        await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });

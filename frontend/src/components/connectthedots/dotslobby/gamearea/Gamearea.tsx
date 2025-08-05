@@ -30,7 +30,7 @@ const Gamearea: React.FC<GameareaProps> = ({ lobbyId, username }) => {
           width: '100%',
         }}
       >
-        <GameBoard username={username} />
+        <GameBoard username={username} lobbyId={lobbyId} />
       </div>
     </div>
   )

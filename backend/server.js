@@ -8,7 +8,9 @@ const connectDotsRoutes = require('./routes/connectdots/connectDotsRoutes');
 const lobbyController = require('./controllers/connectdots/lobbyController');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
+// Load environment variables
 dotenv.config();
+
 connectDB();
 
 const app = express();
@@ -43,8 +45,9 @@ lobbyController(io); // socket handlers
 app.use(notFound);
 app.use(errorHandler);
 
-server.listen(process.env.PORT || 5000, () =>
-  console.log(`Server running on port ${process.env.PORT || 5000}`)
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
 );
 
 // Export the server for testing purposes
